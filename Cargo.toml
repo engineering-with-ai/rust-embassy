@@ -1,0 +1,168 @@
+[package]
+name = "rust-embassy"
+version = "1.0.0-beta"
+edition = "2024"
+rust-version = "1.93.0"
+
+[lints.clippy]
+missing_docs_in_private_items = "warn"
+
+[lints.rust]
+missing_docs = "warn"
+
+[features]
+default = []
+integration-test = []
+
+[dependencies]
+defmt = { version = "1.0.1", optional = true }
+esp-hal = { version = "=1.0.0-rc.0", features = [
+  "defmt",
+  "esp32c3",
+  "unstable",
+], optional = true }
+embassy-time = { version = "0.4.0", features = ["defmt"], optional = true }
+esp-hal-embassy = { version = "0.9.1", features = ["defmt", "esp32c3"], optional = true }
+rtt-target = { version = "0.6.1", features = ["defmt"], optional = true }
+esp-alloc = { version = "0.8.0", features = ["defmt"], optional = true }
+embassy-executor = { version = "0.7.0", features = [
+  "defmt",
+], optional = true }
+embassy-net = { version = "0.6.0", features = [
+  "defmt",
+  "dhcpv4",
+  "dns",
+  "proto-ipv4",
+  "tcp",
+  "udp",
+], optional = true }
+esp-bootloader-esp-idf = { version = "0.2.0", features = ["esp32c3"], optional = true }
+critical-section = { version = "1.2.0", optional = true }
+esp-wifi = { version = "0.15.0", features = [
+  "builtin-scheduler",
+  "defmt",
+  "esp-alloc",
+  "esp32c3",
+  "smoltcp",
+  "wifi",
+], optional = true }
+smoltcp = { version = "0.12.0", default-features = false, features = [
+  "defmt",
+  "medium-ethernet",
+  "multicast",
+  "proto-dhcpv4",
+  "proto-dns",
+  "proto-ipv4",
+  "socket-dns",
+  "socket-icmp",
+  "socket-raw",
+  "socket-tcp",
+  "socket-udp",
+], optional = true }
+static_cell = { version = "2.1.1", optional = true }
+shtcx = { version = "1.0.0", optional = true }
+embedded-hal = { version = "1.0.0", optional = true }
+rust-mqtt = { version = "0.3.0", default-features = false, features = ["no_std"], optional = true }
+heapless = { version = "0.8", optional = true }
+reqwless = { version = "0.13", default-features = false, features = ["defmt"], optional = true }
+drogue-ajour-protocol = { version = "0.6", default-features = false, features = ["defmt"], optional = true }
+serde_cbor = { version = "0.11", default-features = false, features = ["alloc"], optional = true }
+esp-hal-ota = { version = "=0.4.4", features = ["esp32c3", "defmt"], optional = true }
+esp-storage = { version = "0.7", features = ["esp32c3"], optional = true }
+
+[build-dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_yaml = "0.9"
+
+[target.'cfg(target_arch = "riscv32")'.dev-dependencies]
+embedded-test = { version = "0.6.0", features = [
+  "defmt",
+  "embassy",
+  "external-executor",
+] }
+
+[target.'cfg(not(target_arch = "riscv32"))'.dev-dependencies]
+testcontainers = "0.24"
+rumqttc = "0.24"
+tokio = { version = "1.42", features = ["full"] }
+axum = "0.8"
+drogue-ajour-protocol = "0.6"
+serde_cbor = "0.11"
+reqwest = "0.12"
+
+[lib]
+name = "app"
+path = "src/app.rs"
+
+[[bin]]
+name = "rs"
+path = "src/main.rs"
+test = false
+required-features = [
+  "defmt",
+  "esp-hal",
+  "embassy-time",
+  "esp-hal-embassy",
+  "rtt-target",
+  "esp-alloc",
+  "embassy-executor",
+  "embassy-net",
+  "esp-bootloader-esp-idf",
+  "critical-section",
+  "esp-wifi",
+  "smoltcp",
+  "static_cell",
+  "rust-mqtt",
+  "heapless",
+]
+
+[[test]]
+harness = false
+name    = "integration_test"
+path    = "tests/integration_test.rs"
+required-features = [
+  "defmt",
+  "esp-hal",
+  "embassy-time",
+  "esp-hal-embassy",
+  "rtt-target",
+  "esp-alloc",
+  "embassy-executor",
+  "critical-section",
+  "shtcx",
+  "embedded-hal",
+  "esp-bootloader-esp-idf",
+  "integration-test",
+]
+
+[[test]]
+name = "hil_test"
+path = "tests/hil_test.rs"
+
+[profile.dev]
+opt-level = "s"
+
+[profile.release]
+codegen-units    = 1
+debug            = 2
+debug-assertions = false
+incremental      = false
+lto              = 'fat'
+opt-level        = 's'
+overflow-checks  = false
+
+[package.metadata.commands]
+depcheck = "cargo +nightly udeps"
+format = "cargo fmt --all"
+lint = "cargo clippy --lib --bins --all-features -- -D warnings"
+typecheck = "cargo check --all-features"
+audit-packages = "cargo audit --ignore RUSTSEC-2024-0436 --ignore RUSTSEC-2025-0111 --ignore RUSTSEC-2023-0089 --ignore RUSTSEC-2021-0127 --ignore RUSTSEC-2025-0134"
+checks = "cargo cmd depcheck && cargo cmd format && cargo cmd lint && cargo cmd typecheck && cargo cmd audit-packages"
+unit = "cargo test --lib --target $(rustc -vV | sed -n 's|host: ||p') --no-default-features"
+integration = "RUST_LOG=probe_rs=error cargo test --test integration_test --features defmt,esp-hal,embassy-time,esp-hal-embassy,rtt-target,esp-alloc,embassy-executor,critical-section,shtcx,embedded-hal,esp-bootloader-esp-idf,integration-test 2>&1 | grep -v -E '(^Frame |^       /home/)'"
+hardware-in-loop = "cargo test --test hil_test --target $(rustc -vV | sed -n 's|host: ||p') -- --test-threads=1 --nocapture"
+test = "cargo cmd unit && cargo cmd integration && cargo cmd hardware-in-loop"
+cover = "cargo tarpaulin --skip-clean --lib --no-default-features --target $(rustc -vV | sed -n 's|host: ||p') --exclude-files=src/main.rs --target-dir=target/coverage"
+review = "claude 'run code-reviewer agent against diff for simplicity and elegance'"
+commit = "cargo cmd checks && cargo cmd test && cargo cmd review && git add -A && git cz && git push"
+
