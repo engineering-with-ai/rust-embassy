@@ -1,7 +1,7 @@
 # [rust-embassy] 📟
 ![](https://img.shields.io/gitlab/pipeline-status/engineering-with-ai/software-rust-embassy?branch=main&logo=gitlab)
 ![](https://gitlab.com/engineering-with-ai/software-rust-embassy/badges/main/coverage.svg)
-![](https://img.shields.io/badge/1.90-gray?logo=rust)
+![](https://img.shields.io/badge/1.93.0-gray?logo=rust)
 ![](https://img.shields.io/badge/4.1.0-gray?logo=espressif)
 ![](https://img.shields.io/badge/embassy-0.6.0-orange)
 ![](https://img.shields.io/badge/drogue-blue)
