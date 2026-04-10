@@ -1,70 +1,136 @@
-## Methodologies
-### Implementation Methodology
+## Complexity Budget
+
+Default to the simplest implementation that passes the tests.
+Before adding any abstraction, pattern, library, or layer — STOP and ask.
+Complexity requires explicit approval. Simplicity never does.
+
+If you are about to add a base class, an interface, a factory, a manager, a service layer,
+or any indirection that isn't demanded by a failing test — stop. Ask first.
+
+
+## Decision Gates
+
+STOP and present options before implementing any of the following.
+Do NOT implement. Present options and wait for approval.
+
+- Architecture or structural decisions
+- Library or framework selection
+- Data model design
+- Protocol choices
+- Anything with physical consequences
+- Any decision you are uncertain about
+
+
+## When Presenting Options
+
+Lead with your recommendation and one sentence why.
+Then list alternatives with their tradeoff.
+
+Format:
+> I recommend X because Y.
+> Alternatives: A (tradeoff), B (tradeoff).
+
+Never present options without a recommendation.
+Never present a recommendation without a reason.
+
+
+## Anti-Bias Rules
+
+| AI Bias | Correct Practice |
+|---|---|
+| Adds abstraction layers preemptively | YAGNI — build what the test requires, nothing more |
+| Presents options without a recommendation | Always lead with recommendation + one sentence why |
+| Chains implementation without stopping | Stop at every decision gate and wait for approval |
+| Splits files prematurely | 200 line limit, but don't split until you hit it |
+| Uses complex patterns to appear thorough | Simple code that passes tests is the goal, not impressive code |
+| Makes assumptions when context is missing | Ask. Never assume. |
+| Picks a library without presenting alternatives | Always a decision gate — stop and present options |
+
+
+---
+
+
+## Implementation Methodology
+
 When presented with a request YOU MUST:
-1. Use context7 mcp server or websearch tool to get the latest related documentation. Understand the API deeply and all of its nuances and options
-2. Use TDD Approach: Figure out how to validate that the task is complete and working as expected. Whether using a CLI tool like curl, or ssh command or writing unit/integration test
-3. Start with the simplest happy path test. The test should fail on `unimplemented!()|raise NotImplemented| throw Error("Not Implmented")`. Scaffold out all functions (including full signature) with this body 
-4. See the test fail with not implemented error.
-5. Make the smallest change possible
-6. Take time to think through the most optimal order of operations for implementation
-7. Check if tests and `(npm |cargo cmd | uv run) checks` passes
-8. Repeat step 5-6 until the test passes
-9. You MUST NOT move on until tests pass
 
-### Debugging Methodology
-
-#### Phase I: Information Gathering
-
-1. Understand the error
-2. Read the relevant source code: try local `.venv`, `node_modules` or `$HOME/.cargo/registry/src/`
-3. Look at any relevant github issues for the library
-
-#### Phase II: Testing Hypothesis
-4. Develop a hypothesis that resolves the root cause of the problem. Must only chase root cause possible solutions.  Think hard to decide if its root cause or NOT.
-5. Add debug logs to determine hypothesis
-6. If not successful, YOU MUST clean up any artifact or code attempts in this debug cycle. Then repeat steps 1-5
-
-#### Phase III: Weigh Tradeoffs
-7. If successful and fix is straightforward. Apply fix
-8. If not straightforward, weigh the tradeoffs and provide a recommendation
+1. Use context7 mcp server or websearch tool to get the latest related documentation. Understand the API deeply and all of its nuances and options.
+2. Use TDD: derive expected behavior first, write the failing test, then build until it passes.
+3. Start with the simplest happy path test.
+4. Think about what the assert should look like.
+5. See the test fail.
+6. Make the smallest change possible.
+7. Check if test passes.
+8. Repeat steps 6-7 until it passes.
+9. YOU MUST NOT move on until assertions pass.
 
 
+## Debugging Methodology
 
-## 🧱 Code Structure & Modularity
-- **Follow SOLID Principles***
-- **Never Break Up nested Values:** When working with a value that is part of a larger
-  structure or has a parent object, always import or pass the entire parent structure
-  as an argument. Never extract or isolate the nested value from its parent context.
-- **Write Elegant Code** Write the most minimal code to get the job done
-- **Get to root of the problem** Never write hacky workarounds. You are done when the tests pass 
-- **Never create a file longer than 200 lines of code.** If a file approaches this limit, refactor by splitting it into modules or helper files.
-- **Use cfg.yml file for config variable. You MUST NOT add config vars to env files.**
-- **Use template-secrets.env file to keep track of the list of secrets:**
-- **Use environment variables for secrets** Do NOT conflate secrets with config variables
-- **Keep it generic class/type names: TimeseriesClient instead of TimeScaleClient**
-- **Use Generics Judiciously:** Remember, while generics are powerful, they can also make code more complex if
-  overused. Always consider readability and maintainability when deciding whether to
-  use generics. If the use of generics doesn't provide a clear benefit in terms of
-  code reuse, type safety, or API design, it might be better to use concrete types
-  instead.
+### Phase I: Information Gathering
+1. Understand the error.
+2. Read the relevant source code: try local `.venv`, `node_modules`, or `$HOME/.cargo/registry/src/`.
+3. Look at any relevant GitHub issues for the library.
 
-### 🧪 Testing & Reliability
-- **Fail fast, fail early**: Detect errors as early as possible and halt execution. Rely on the runtime or system to handle the error and provide a stack trace.  You MUST NOT write random error handling for no good reason.
-- **Unit Tests should be colocated in `src/`**
-- **Integration Tests** should be located in `tests/`
-- **Use AAA (Arrange, Act, Assert) pattern for tests**:
-  - **Arrange**: Set up the necessary context and inputs.
-  - **Act**: Execute the code under test.
-  - **Assert**: Verify the outcome matches expectations.
-- **Use testcontainers for integration tests** — spin up real databases/services in Docker, session-scoped for performance
+### Phase II: Testing Hypothesis
+4. Develop a hypothesis that resolves the root cause. Must only chase root cause solutions. Think hard to decide if it's root cause or NOT.
+5. Add debug logs to test hypothesis.
+6. If not successful, YOU MUST clean up any artifacts or code attempts in this debug cycle. Then repeat steps 1-5.
 
-## 💅 Style
-- **Constants in code:** Write top level declarations in SCREAMING_SNAKE_CASE.
+### Phase III: Weigh Tradeoffs
+7. If successful and fix is straightforward — apply fix.
+8. If not straightforward — weigh tradeoffs and provide a recommendation using the options format above.
 
-### 📚 Documentation & Explainability
-- **Comment non-obvious code** and ensure everything is understandable to a mid-level developer.
-- When writing complex logic, **add an inline `Reason:` comment** explaining the why, not just the what.
-- **Write concise document comments for primarily for an LLM to consume, secondarily for a document generator to consume**
+
+## Code Structure & Modularity
+
+- **Never break up nested values.** When working with a value that is part of a larger structure, always import or pass the entire parent structure. Never extract or isolate the nested value from its parent context.
+- **Get to the root of the problem.** Never write hacky workarounds.
+- **Never create a file longer than 200 lines.** If a file approaches this limit, refactor by splitting into modules. Do not split prematurely.
+- **Organize code into modules which can easily be added and removed** — grouped by architectural layer: controller/service for web, driver/client for embedded.
+- **Strive for symmetry among all projects.** All projects, whatever the language, should follow the same patterns. The only exception is language idioms and idiosyncrasies.
+- **Use `cfg.yml` for config variables. NEVER add config vars to env files.**
+- **Use `template-secrets.env` to track the list of secrets.**
+- **Use environment variables for secrets.** Do NOT conflate secrets with config variables.
+- **Use dependency injection for testability.**
+- **Keep class names generic:** `TimeseriesClient` not `TimescaleClient`.
+- **Use generics judiciously.** If generics don't provide a clear benefit in code reuse, type safety, or API design — use concrete types instead.
+
+
+## Testing & Reliability
+
+When engaging in TDD:
+1. Think about one useful happy path assert.
+2. Write the failing test.
+3. Write the function with `unimplemented!()` (Rust), `NotImplementedError` (Python), or `throw Error("Not Implemented")` (TypeScript).
+4. See the not-implemented error.
+5. Make the smallest change until it passes.
+
+- **Use AAA (Arrange, Act, Assert) pattern for all tests.**
+- **Fail fast, fail early.** Detect errors as early as possible and halt. Rely on the runtime to handle the error and provide a stack trace. Do NOT write defensive error handling without a good reason.
+
+
+## Style
+
+- **Constants:** Top-level declarations in `SCREAMING_SNAKE_CASE`.
+- **Use explicit type hints always.** No `Any`.
+- **Prefer Pydantic models over dicts for structured data.**
+- **Use proper logging, not `print()` debugging.**
+
+
+## Documentation
+ - **Write comments in a terse and casual tone**
+- **Comment non-obvious code.** Everything should be understandable to a mid-level developer.
+- **Add an inline `# Reason:` comment** for complex logic — explain the why, not the what.
+- **Write concise docstrings primarily for an LLM to consume**, secondarily for a document generator.
+
+
+## AI Behavior Rules
+
+- **Never assume missing context. Ask.**
+- **Never hallucinate API or library functions.** Only use known, verified libraries.
+- **Never chain steps through a decision gate.** Stop. Present options. Wait.
+- **Never declare an API broken without research and confirmation.** If something doesn't work as expected, the first assumption is that you're using it wrong. Before concluding "bug": (1) search docs, forums, and GitHub issues, (2) read the library source, (3) write an isolated probe that eliminates your own usage errors. Only after all three confirm the behavior, label it a bug.
 
 
 ## Rust Language Guidelines 🦀
@@ -75,10 +141,9 @@ When presented with a request YOU MUST:
 - **Prefer functional programming:** Use iterators with `map`/`filter`/`fold` for transforming collections
 - **Use `format!` macro** for string formatting
 - **Use `const` for compile-time constants** with SCREAMING_SNAKE_CASE
-
+- **Prefer `&str` over `String`** for function parameters when possible. **Use `String` for struct fields** when you need owned data
 ### Rust Testing Guidelines
-- **Use actual/expected semantics:** `assert_eq!(actual, expected);`
-
+ - **Use acutal/expected semantics:** `assert_eq!(actual, expected);`
 ### Error Handling
 - **Propagate errors with `?` operator** - let them bubble up
 - **Use `Box<dyn Error>` for simple error handling**
@@ -94,51 +159,89 @@ When presented with a request YOU MUST:
 
 ### Commenting
 
-- **Write concise RustDoc comments for an llm to consume:**
-
+- **Write concise RustDoc comments for an llm to consume:** 
 ```rust
-/// Calculates basic statistics for numeric data.
+#[derive(Debug, Clone)]
+  pub struct Stats {
+  pub mean: f64,
+  pub median: f64,
+  pub std_dev: f64,
+  pub min: f64,
+  pub max: f64,
+  }``rust
+
+/// Calculates basic statistics (mean, median, std dev, min, max) for numeric data.
 ///
 /// # Arguments
-/// * `data` - Slice of f64 values, filters out NaN/infinite
+/// \* `data` - Slice of f64 values, filters out NaN/infinite values
+///
+/// # Returns
+/// Stats struct with calculated metrics or panics on invalid input
 ///
 /// # Panics
 /// Panics if data is empty or contains no valid numbers
 ///
 /// # Example
-/// ```rust
-/// let result = calculate_stats(&[1.0, 2.0, 3.0]);
-/// assert_eq!(result.mean, 2.0);
-/// ```
+/// `rust
+/// let result = calculate_stats(&[1.0, 2.0, 3.0, 4.0, 5.0]);
+/// assert_eq!(result.mean, 3.0);
+/// `
 pub fn calculate_stats(data: &[f64]) -> Stats {
+let valid: Vec<f64> = data.iter().filter(|&&x| x.is_finite()).copied().collect();
+
+    if valid.is_empty() {
+        panic!("No valid data");
+    }
+
+    let mean = valid.iter().sum::<f64>() / valid.len() as f64;
+
+    let mut sorted = valid.clone();
+    sorted.sort_by(|a, b| a.partial_cmp(b).unwrap());
+
+    let median = if sorted.len() % 2 == 0 {
+        (sorted[sorted.len() / 2 - 1] + sorted[sorted.len() / 2]) / 2.0
+    } else {
+        sorted[sorted.len() / 2]
+    };
+
+    let variance = valid.iter()
+        .map(|x| (x - mean).powi(2))
+        .sum::<f64>() / valid.len() as f64;
+
+    Stats {
+        mean,
+        median,
+        std_dev: variance.sqrt(),
+        min: *sorted.first().unwrap(),
+        max: *sorted.last().unwrap(),
+    }
+
+}
+
 ```
 
 
-## Rust Embassy Guidelines 📟
 
-### Client-Driver Pattern
-- **Use client-driver patterns** established in the `temperature/` example. Use it as a reference when creating new resources.
-- **Driver:** Low-level hardware interaction (sensor reads, register access)
-- **Client:** High-level API that wraps the driver (unit conversion, data formatting)
+  ## Sensor Architecture Pattern
 
-### Embassy Async Runtime
-- **Use `#[embassy_executor::main]`** as the entry point
-- **Use `embassy_time::Timer`** for async delays instead of blocking sleep
-- **Spawn tasks with `spawner.spawn()`** for concurrent operations
+  This project follows a layered architecture for sensor implementations:
 
-### Hardware Abstraction
-- **Use ESP-HAL peripherals** — initialize via `esp_hal::init()` with config
-- **Configure pins explicitly** — use typed GPIO pins for safety
-- **Use feature flags** for conditional compilation (e.g., `defmt`, `esp-hal`, `integration-test`)
+  [sensor_type]/
+  ├── [sensor_type]_driver.rs     # Low-level hardware interface
+  ├── [sensor_type]_client.rs     # High-level API abstraction└──
+  [sensor_type]_client_test.rs # Client interface tests
 
-### WiFi & MQTT
-- **Initialize WiFi with `esp_wifi`** — connect using credentials from `cfg.yml`
-- **Use async MQTT client** for publishing sensor data
-- **Handle reconnection logic** for unreliable network environments
+  **Driver Layer**: Hardware-specific implementation that can be swapped for
+  different sensors of the same type. Handles direct sensor communication (I2C,
+  SPI, GPIO protocols).
 
-### Testing Strategy
-- **Unit tests:** `cargo test --lib` on host target (no hardware needed)
-- **Integration tests:** `embedded-test` crate with testcontainers for service dependencies
-- **Hardware-in-loop tests:** `hil_test` running against real device with `--test-threads=1`
+  **Client Layer**: Standardized high-level interface that applications interact
+   with. Provides consistent API regardless of underlying driver implementation.
+
+  **Testing**: Tests focus on the client interface to ensure API contract
+  compliance.
+
+  When adding new sensors, follow this pattern to maintain modularity and allow
+  driver swapping without application code changes.
 
 
