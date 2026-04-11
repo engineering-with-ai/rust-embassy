@@ -1,11 +1,9 @@
 local:
   log_level: DEBUG
   wifi_ssid: "LanSolo-2g"
-  mqtt_host: "10.0.0.135"
-  ota_host: "10.0.0.135"
+  mqtt_host: "10.0.0.124"
 
 ci:
   log_level: INFO
   wifi_ssid: "Acme Widget Company_IoT"
   mqtt_host: "173.211.12.43"
-  ota_host: "173.211.12.43"

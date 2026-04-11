@@ -13,8 +13,6 @@ struct Config {
     wifi_ssid: String,
     /// MQTT broker hostname or IP address
     mqtt_host: String,
-    /// OTA server hostname or IP address
-    ota_host: String,
 }
 
 fn main() {
@@ -23,7 +21,6 @@ fn main() {
     println!("cargo:rerun-if-env-changed=ENV");
     println!("cargo:rerun-if-env-changed=WIFI_PASSWORD");
     println!("cargo:rerun-if-env-changed=MQTT_PORT");
-    println!("cargo:rerun-if-env-changed=OTA_PORT");
     println!("cargo:rerun-if-env-changed=FIRMWARE_VERSION");
 
     // Determine environment (default to "local")
@@ -50,10 +47,6 @@ fn main() {
     // Get MQTT port from env var (for HIL tests) or default to 1883
     let mqtt_port = std::env::var("MQTT_PORT").unwrap_or_else(|_| "1883".to_string());
 
-    // Get OTA host from config and port from env var (for HIL tests) or default to 8080
-    let ota_host = &config.ota_host;
-    let ota_port = std::env::var("OTA_PORT").unwrap_or_else(|_| "8080".to_string());
-
     // Get firmware version from env var or use Cargo.toml version
     let pkg_version = std::env::var("CARGO_PKG_VERSION").unwrap_or_else(|_| "0.0.0".to_string());
     let firmware_version =
@@ -64,8 +57,6 @@ fn main() {
     println!("cargo:rustc-env=WIFI_PASSWORD={}", wifi_password);
     println!("cargo:rustc-env=MQTT_HOST={}", mqtt_host);
     println!("cargo:rustc-env=MQTT_PORT={}", mqtt_port);
-    println!("cargo:rustc-env=OTA_HOST={}", ota_host);
-    println!("cargo:rustc-env=OTA_PORT={}", ota_port);
     println!("cargo:rustc-env=FIRMWARE_VERSION={}", firmware_version);
 
     // Skip embedded linker configuration for host unit tests

@@ -11,8 +11,6 @@ use crate::temperature::temperature_client::TemperatureClient;
 pub mod mqtt;
 /// WiFi and network stack setup.
 pub mod network;
-/// OTA firmware update module.
-pub mod ota;
 /// Temperature sensor client.
 pub mod temperature;
 
@@ -26,76 +24,6 @@ pub const MODE: &str = "development";
 /// Application mode - development runs one iteration, beta runs infinite loop.
 #[cfg(not(feature = "integration-test"))]
 pub const MODE: &str = "beta";
-
-/// Check for OTA updates and apply if available.
-///
-/// # Arguments
-/// * `stack` - Embassy network stack for HTTP connectivity
-#[cfg(all(feature = "reqwless", target_arch = "riscv32"))]
-pub async fn check_and_apply_ota(stack: &'static embassy_net::Stack<'static>) {
-    use defmt::info;
-
-    info!("Checking for OTA updates...");
-    let mut ota_client = crate::ota::OtaHttpClient::new(stack);
-    match ota_client.check_for_update().await {
-        Ok(crate::ota::OtaCheckResult::UpToDate) => info!("Firmware is up to date"),
-        Ok(crate::ota::OtaCheckResult::UpdateAvailable { .. }) => {
-            info!("Update available, fetching firmware info...");
-
-            match ota_client.get_firmware_info().await {
-                Ok(fw_info) => {
-                    info!(
-                        "Firmware: size={}, checksum={:#x}",
-                        fw_info.size, fw_info.checksum
-                    );
-
-                    #[cfg(feature = "esp-hal-ota")]
-                    {
-                        match crate::ota::OtaWriter::new() {
-                            Ok(mut writer) => {
-                                if writer.begin(fw_info.size, fw_info.checksum).is_ok() {
-                                    info!("OTA initialized, downloading...");
-                                    let result = ota_client
-                                        .download_firmware(|_offset, data| {
-                                            let _ = writer.write_chunk(data);
-                                        })
-                                        .await;
-
-                                    match result {
-                                        Ok(_) => {
-                                            info!("Download complete, finalizing...");
-                                            if writer.finalize(true, true).is_ok() {
-                                                info!("OTA success! Rebooting...");
-                                                crate::ota::OtaWriter::reboot();
-                                            }
-                                        }
-                                        Err(_) => info!("Download failed"),
-                                    }
-                                }
-                            }
-                            Err(_) => info!("Failed to create OtaWriter"),
-                        }
-                    }
-
-                    #[cfg(not(feature = "esp-hal-ota"))]
-                    {
-                        let result = ota_client
-                            .download_firmware(|offset, data| {
-                                info!("Chunk: offset={}, size={}", offset, data.len());
-                            })
-                            .await;
-                        match result {
-                            Ok(crc) => info!("Download complete, CRC={:#x}", crc),
-                            Err(_) => info!("Download failed"),
-                        }
-                    }
-                }
-                Err(_) => info!("Failed to get firmware info"),
-            }
-        }
-        Err(_) => info!("OTA check failed (continuing anyway)"),
-    }
-}
 
 /// Main application function that reads temperature and publishes to MQTT.
 ///
