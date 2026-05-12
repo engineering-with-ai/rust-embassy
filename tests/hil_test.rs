@@ -227,5 +227,3 @@ async fn test_hil_mqtt_integration() -> Result<(), Box<dyn Error>> {
 
     Ok(())
 }
-
-

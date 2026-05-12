@@ -38,4 +38,3 @@ pub fn reset_device() -> Result<(), String> {
         Err("probe-rs reset failed".into())
     }
 }
-
