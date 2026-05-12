@@ -78,7 +78,7 @@ embedded-test = { version = "0.6.0", features = [
 
 [target.'cfg(not(target_arch = "riscv32"))'.dev-dependencies]
 testcontainers = "0.24"
-rumqttc = "0.24"
+rumqttc = { version = "0.25", default-features = false }
 tokio = { version = "1.42", features = ["full"] }
 axum = "0.8"
 
