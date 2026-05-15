@@ -40,7 +40,7 @@ async fn start_container(
     })
 }
 
-/// Start an EMQX MQTT broker with dynamic port.
+/// Start an HiveMQ MQTT broker with dynamic port.
 ///
 /// # Example
 /// ```rust
@@ -49,10 +49,10 @@ async fn start_container(
 /// ```
 pub async fn start_mqtt_broker() -> Result<Container, Box<dyn std::error::Error>> {
     start_container(
-        "emqx/emqx",
+        "hivemq/hivemq-ce",
         "latest",
         1883,
-        "Listener tcp:default on 0.0.0.0:1883 started.",
+        "Started TCP Listener on address 0.0.0.0 and on port 1883.",
     )
     .await
 }

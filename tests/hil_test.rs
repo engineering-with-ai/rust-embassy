@@ -56,7 +56,7 @@ async fn test_hil_mqtt_integration() -> Result<(), Box<dyn Error>> {
     );
     let broker = start_mqtt_broker().await?;
     println!(
-        "[{:.1}s] ✅ EMQX broker started on port {}",
+        "[{:.1}s] ✅ HiveMQ broker started on port {}",
         start.elapsed().as_secs_f32(),
         broker.port
     );
