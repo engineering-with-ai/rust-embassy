@@ -4,6 +4,10 @@ stages:
 
 check:
   stage: check
+  before_script:
+    # Clear stale broker containers from prior runs — includes both the
+    # legacy `emqx` name and the new `hivemq` so we don't collide on 1883.
+    - docker rm -f emqx hivemq 2>/dev/null || true
   script:
     - cargo cmd checks
     - cargo nextest run --lib --no-default-features --profile ci --cargo-profile dev --target x86_64-unknown-linux-gnu
