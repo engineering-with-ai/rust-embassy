@@ -5,15 +5,13 @@ stages:
 check:
   stage: check
   before_script:
-    # Clear stale broker containers from prior runs — by name (legacy
-    # `emqx` + current `hivemq`) and by any container publishing 1883
-    # (testcontainers leaves random-named containers after killed runs).
+    # Clear stale broker containers from prior runs. Use `docker ps -a`
+    # not the default `docker ps` — failed testcontainer runs leave the
+    # container in `Created` state (not Running), which still reserves
+    # the port mapping. `Created` containers don't show up without -a.
     - docker rm -f emqx hivemq 2>/dev/null || true
-    - docker ps -q --filter publish=1883 | xargs -r docker rm -f
-    - docker ps -q --filter "ancestor=hivemq/hivemq-ce" | xargs -r docker rm -f
-    # DEBUG — show what's currently using 1883 on the runner host
-    - ss -tlnp 2>/dev/null | grep 1883 || echo "no listener on 1883"
-    - docker ps -a 2>/dev/null | head -20 || true
+    - docker ps -aq --filter "ancestor=hivemq/hivemq-ce" | xargs -r docker rm -f
+    - docker ps -aq --filter "ancestor=emqx/emqx" | xargs -r docker rm -f
   script:
     - cargo cmd checks
     - cargo nextest run --lib --no-default-features --profile ci --cargo-profile dev --target x86_64-unknown-linux-gnu
