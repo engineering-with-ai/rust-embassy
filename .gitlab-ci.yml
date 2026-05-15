@@ -5,9 +5,12 @@ stages:
 check:
   stage: check
   before_script:
-    # Clear stale broker containers from prior runs — includes both the
-    # legacy `emqx` name and the new `hivemq` so we don't collide on 1883.
+    # Clear stale broker containers from prior runs — by name (legacy
+    # `emqx` + current `hivemq`) and by any container publishing 1883
+    # (testcontainers leaves random-named containers after killed runs).
     - docker rm -f emqx hivemq 2>/dev/null || true
+    - docker ps -q --filter publish=1883 | xargs -r docker rm -f
+    - docker ps -q --filter "ancestor=hivemq/hivemq-ce" | xargs -r docker rm -f
   script:
     - cargo cmd checks
     - cargo nextest run --lib --no-default-features --profile ci --cargo-profile dev --target x86_64-unknown-linux-gnu
